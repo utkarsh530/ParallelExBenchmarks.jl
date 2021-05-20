@@ -53,8 +53,15 @@ abstols = 1.0 ./ 10.0 .^ (4:7)
 reltols = 1.0 ./ 10.0 .^ (1:4)
 
 setups = [  Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=true)),
-            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=false)), 
+            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=false)),
+            Dict(:alg=>Rosenbrock23()),
+            Dict(:alg=>TRBDF2()),
+            Dict(:alg=>ImplicitEulerExtrapolation()),
+            Dict(:alg=>ImplicitEulerBarycentricExtrapolation()),
+            Dict(:alg=>CVODE_BDF()),
+            Dict(:alg=>Rodas3()), 
          ]
 
+names = ["threading true","threading false","Rosenbrock23","TRBDF2","ImplicitEulerExtrapolation","ImplicitEulerBarycentricExtrapolation","CVODE_BDF","Rodas3"]         
 wp = WorkPrecisionSet(prob,abstols,reltols,setups;error_estimator=:l2,
-                    save_everystep=false,appxsol=test_sol,maxiters=Int(1e5),numruns=10,names=["threading true","threading false"])
+                    save_everystep=false,appxsol=test_sol,maxiters=Int(1e5),names=names)
