@@ -1,7 +1,5 @@
-using OrdinaryDiffEq, DiffEqDevTools, Sundials, ParameterizedFunctions, Plots, ODE, ODEInterfaceDiffEq
-gr()
-using LinearAlgebra
-
+using OrdinaryDiffEq, Sundials
+using DiffEqDevTools: TestSolution, WorkPrecisionSet
 const N = 9
 const xyd_brusselator = range(0,stop=1,length=N)
 brusselator_f(x, y, t) = (((x-0.3)^2 + (y-0.6)^2) <= 0.1^2) * (t >= 1.1) * 5.
@@ -53,8 +51,9 @@ abstols = 1.0 ./ 10.0 .^ (4:7)
 reltols = 1.0 ./ 10.0 .^ (1:4)
 
 setups = [  Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=true)),
-            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=false)), 
+            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=false)),
+            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads()))
          ]
 
 wp = WorkPrecisionSet(prob,abstols,reltols,setups;error_estimator=:l2,
-                    save_everystep=false,appxsol=test_sol,maxiters=Int(1e5),numruns=10,names=["threading true","threading false"])
+                    save_everystep=false,appxsol=test_sol,maxiters=Int(1e5),numruns=10,names=["threading true","threading false", "polyester"])
