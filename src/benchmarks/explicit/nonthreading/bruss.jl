@@ -52,8 +52,8 @@ test_sol = TestSolution(sol)
 abstols = 1.0 ./ 10.0 .^ (4:7)
 reltols = 1.0 ./ 10.0 .^ (1:4)
 
-setups = [  Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=true)),
-            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=false)),
+setups = [  Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads())),
+            Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=true)),
             Dict(:alg=>Rosenbrock23()),
             Dict(:alg=>TRBDF2()),
             Dict(:alg=>ImplicitEulerExtrapolation()),
