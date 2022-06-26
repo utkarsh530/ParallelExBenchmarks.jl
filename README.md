@@ -3,12 +3,15 @@ Benchmarking native Julia parallel extrapolation methods
 
 
 ## Multi-threading results
-On testing with Brusselator problem, We are getting around 20-30% performance increase in `ImplicitHairerWannerExtrapolation`.
-### Brusselator with 162 ODEs
-![bruss_9](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/threading/bruss_9.png)
+### Brusselator Scaling
+![](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/scale_ode_bruss.png)
 
-## Non-threading results
-### Van der Pol
-![vanderpol](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/nonthreading/vanderpol.png)
+### Brusselator Speedup (~2x, Polyester Threads)
+![](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/speed_up_bench.png)
+
+
+## ODE Benchmarks
+### SBML BioModel
+![](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/sbml_bench.png)
 ### Rober
-![vanderpol](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/nonthreading/rober.png)
+![ROBER, High Tolerances](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/Rober.png)
