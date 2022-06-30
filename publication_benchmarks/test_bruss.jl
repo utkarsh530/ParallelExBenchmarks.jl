@@ -27,7 +27,7 @@ function bruss(N)
   jac_sparsity = Float64.(sparse(sparsity_pattern))
   f =  ODEFunction(brusselator_2d_loop;jac_prototype=jac_sparsity)
   function init_brusselator_2d(xyd)
-    N = length(xyd)
+    local N = length(xyd)
     u = zeros(N, N, 2)
     for I in CartesianIndices((N, N))
       x = xyd[I[1]]
