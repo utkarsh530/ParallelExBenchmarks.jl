@@ -2,9 +2,10 @@ using FileIO, Plots
 
 using OrdinaryDiffEq, DiffEqDevTools, Sundials, ParameterizedFunctions, ODE, ODEInterfaceDiffEq, LSODA, SparsityDetection, SparseArrays
 using LinearAlgebra, LinearSolve
-using SBMLToolkit, ModelingToolkit
+#using SBMLToolkit,
+using ModelingToolkit
 
-wps = load("all_wps_def.jld2")["all_wps_h"]
+wps = load("./publication_benchmarks/all_wps_def_1.jld2")["all_wps_h"]
 
 unthreaded = []
 threaded = []
@@ -16,7 +17,7 @@ for wp in wps
     push!(polyester,wp.wps[3].times[3])
 end
 
-x = map(n->2*n*n,range(1,8))
+x = map(n->2*n*n,range(1,7))
 
 plot(x, unthreaded[1:8],linewidth=2,linestyle = :dash,markershape = :diamond,label = "default (unthreaded)")
 plot!(x, polyester[1:8],linewidth=2, markershape = :star, label = "Polyester threads")

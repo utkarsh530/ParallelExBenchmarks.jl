@@ -41,7 +41,7 @@ function bruss(N)
   return ODEProblem(f,u0,(0.,11.5),p)
 end
 
-N = 7
+N = 8
 prob = bruss(N)
 sol = solve(prob,CVODE_BDF(),abstol=1/10^14,reltol=1/10^14)
 test_sol = TestSolution(sol)
@@ -49,12 +49,25 @@ test_sol = TestSolution(sol)
 abstols = 1.0 ./ 10.0 .^ (7:12)
 reltols = 1.0 ./ 10.0 .^ (4:9)
 
+
+setups = [
+    Dict(:alg => ImplicitHairerWannerExtrapolation()),
+    Dict(:alg => ImplicitHairerWannerExtrapolation(threading=true,linsolve = RFLUFactorization(;thread = Val(false)))),
+    Dict(:alg => ImplicitHairerWannerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)))),
+  ]
+
+
+names = ["unthreaded", "threaded", "Polyester"];
+
+wp = WorkPrecisionSet(prob, abstols, reltols, setups;
+                      names = names, save_everystep=false, appxsol=test_sol, maxiters=Int(1e5), numruns=10)
+
+plot(wp)
 setups = [
   Dict(:alg=>ImplicitHairerWannerExtrapolation(threading = OrdinaryDiffEq.PolyesterThreads())),
   Dict(:alg=>ImplicitEulerExtrapolation(threading = OrdinaryDiffEq.PolyesterThreads())),
   Dict(:alg=>ImplicitEulerBarycentricExtrapolation(threading = OrdinaryDiffEq.PolyesterThreads())),
 ]
-
 gr()
 wp = WorkPrecisionSet(prob,abstols,reltols,setups;
                     save_everystep=false,appxsol=test_sol,maxiters=Int(1e5),numruns=10)

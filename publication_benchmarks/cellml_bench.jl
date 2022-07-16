@@ -1,23 +1,16 @@
-using Pkg
-cd("./publication_benchmarks/sbml/")
-Pkg.activate(".")
 using OrdinaryDiffEq, DiffEqDevTools, Sundials, ParameterizedFunctions, Plots, ODE, ODEInterfaceDiffEq, LSODA, SparsityDetection, SparseArrays
 using LinearAlgebra, LinearSolve
-using SBMLToolkit, ModelingToolkit
+using CellMLToolkit, ModelingToolkit
 gr()
 #LinearAlgebra.BLAS.set_num_threads(1)
 
-fns = readdir("./data/models";join=true)
+fn = "./publication_benchmarks/bhalla_iyengar_1999/bhalla_iyengar_1999_a.cellml"
 
-myread(fn) = readSBML(fn, doc -> begin
-  set_level_and_version(3, 2)(doc) # fails on wuschel
-  convert_simplify_math(doc)
-end)
 
-fn = fns[2]
-m_name = splitext(splitdir(fn)[2])[1]
+ml = CellModel(fn)
+prob = ODEProblem(ml, (0,100.0))
 #sys = structural_simplify(ODESystem(myread(fn)))
-prob = ODEProblem(sys, [], (0,10.))
+#prob = ODEProblem(sys, [], (0,10.))
 
 sol = solve(prob, CVODE_BDF(), abstol=1 / 10^14, reltol=1 / 10^14)
 test_sol = TestSolution(sol)
@@ -56,12 +49,14 @@ setups = [Dict(:alg=>KenCarp4()),Dict(:alg=>KenCarp4()),Dict(:alg=>KenCarp4())]
 
 # plot(wp)
 
+abstols = 1.0 ./ 10.0 .^ (11:14)
+reltols = 1.0 ./ 10.0 .^ (8:11)   
 
-setups = [Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)),init_order = 3)),
+setups = [Dict(:alg=>ImplicitHairerWannerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)),init_order = 2)),
           Dict(:alg=>KenCarp4()),
           #Dict(:alg=>TRBDF2()),
-          Dict(:alg=>ImplicitEulerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)),init_order = 3)),
-          Dict(:alg=>ImplicitEulerBarycentricExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)),init_order = 3)),
+          Dict(:alg=>ImplicitEulerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)),init_order = 2)),
+          Dict(:alg=>ImplicitEulerBarycentricExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads(),linsolve = RFLUFactorization(;thread = Val(false)),init_order = 2)),
           Dict(:alg=>Rodas4()),
           #Dict(:alg=>rodas()),
           Dict(:alg=>radau()),
@@ -73,9 +68,13 @@ wp = WorkPrecisionSet(prob, abstols, reltols, setups;
                       save_everystep=false, appxsol=test_sol, maxiters=Int(1e5), numruns=10)
 
 
-plot(wp, size = (900,600), legend = :topright, linewidth = 4)
+plot(wp)
+#plot(wp, size = (900,600), legend = :topright, linewidth = 4)
 
 
+
+abstols = 1.0 ./ 10.0 .^ (10:15)
+reltols = 1.0 ./ 10.0 .^ (7:12)
 
 setups = [
     Dict(:alg => ImplicitHairerWannerExtrapolation()),
@@ -91,4 +90,4 @@ wp = WorkPrecisionSet(prob, abstols, reltols, setups;
 
 plot(wp)
 
-@show wp.wps[1].times./wp.wps[2].times
+@show wp.wps[1].times./wp.wps[3].times

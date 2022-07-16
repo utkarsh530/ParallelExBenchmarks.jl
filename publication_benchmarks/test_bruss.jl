@@ -1,7 +1,7 @@
 using OrdinaryDiffEq, DiffEqDevTools, Sundials, ParameterizedFunctions, Plots, ODE, ODEInterfaceDiffEq, LSODA, SparsityDetection, SparseArrays, LinearSolve
 gr()
-#using LinearAlgebra
-#LinearAlgebra.BLAS.set_num_threads(1)
+using LinearAlgebra
+LinearAlgebra.BLAS.set_num_threads(1)
 function bruss(N)
   xyd_brusselator = range(0,stop=1,length=N)
   brusselator_f(x, y, t) = (((x-0.3)^2 + (y-0.6)^2) <= 0.1^2) * (t >= 1.1) * 5.
@@ -50,7 +50,7 @@ function benchmark!(N,bruss,all_wps_h)
 
     abstols = 1.0 ./ 10.0 .^ (7:12)
     reltols = 1.0 ./ 10.0 .^ (4:9)
-    
+
     # setups = [
     #   Dict(:alg=>ImplicitHairerWannerExtrapolation(threading = OrdinaryDiffEq.PolyesterThreads())),
     #   Dict(:alg=>ImplicitEulerExtrapolation(threading = OrdinaryDiffEq.PolyesterThreads())),
@@ -70,10 +70,10 @@ function benchmark!(N,bruss,all_wps_h)
 end
 
 all_wps_h = []
-for N in range(2,15)
+for N in range(2,8)
     benchmark!(N,bruss,all_wps_h)
 end
 
 using FileIO
 
-save("all_wps_def.jld2",Dict("all_wps_h"=>all_wps_h))
+save("./publication_benchmarks/all_wps_def_8_threads.jld2",Dict("all_wps_h"=>all_wps_h))

@@ -1,10 +1,13 @@
-using OrdinaryDiffEq, FileIO, ParameterizedFunctions
+using OrdinaryDiffEq, DiffEqDevTools, Sundials, ParameterizedFunctions, Plots, ODE, ODEInterfaceDiffEq, LSODA, ModelingToolkit
+gr()
+using LinearAlgebra
+using Plots.PlotMeasures
 
-par = load("./src/params.jld2")
+par = load("./publication_benchmarks/params.jld2")
 
 function sbml_model!(du, u, p, t)
     # assignmentRule: variable = mwa6994523_5d45_4000_af0c_3e94073bf183
-    u[88] = u[80] + u[79]
+    u88 = u[80] + u[79]
 
     reaction_mwa67e40c1_693d_4214_adc8_b2f2b71cef12 = p["reaction_mwa67e40c1_693d_4214_adc8_b2f2b71cef12_mw575f7f49_3663_47f1_b492_5b92c1c4345d"] * u[1] * u[2] - p["reaction_mwa67e40c1_693d_4214_adc8_b2f2b71cef12_mw53c64fd3_9a1c_4947_a734_74a73554964c"] * u[3]
 
@@ -188,7 +191,7 @@ function sbml_model!(du, u, p, t)
 
     reaction_mw4a334f7d_9bce_4690_b623_a427ed66a174 = p["reaction_mw4a334f7d_9bce_4690_b623_a427ed66a174_mw6165953d_ce44_4b21_a18a_c401c04993f1"] * u[87] - p["reaction_mw4a334f7d_9bce_4690_b623_a427ed66a174_mw99a30aef_212a_4577_bcfd_8c5764057cca"] * u[77] * u[83]
 
-    reaction_mw950485f2_4463_4309_a4e4_cc81d16ffb7f = p["reaction_mw950485f2_4463_4309_a4e4_cc81d16ffb7f_mw94b0216f_3353_4b36_b9b7_fd34a0510b08"] * u[88] * u[36] / (p["reaction_mw950485f2_4463_4309_a4e4_cc81d16ffb7f_mw2034bbe7_27cc_410c_9870_1f8a5986dfa5"] + u[36])
+    reaction_mw950485f2_4463_4309_a4e4_cc81d16ffb7f = p["reaction_mw950485f2_4463_4309_a4e4_cc81d16ffb7f_mw94b0216f_3353_4b36_b9b7_fd34a0510b08"] * u88 * u[36] / (p["reaction_mw950485f2_4463_4309_a4e4_cc81d16ffb7f_mw2034bbe7_27cc_410c_9870_1f8a5986dfa5"] + u[36])
 
     reaction_mw62f71309_e066_47d2_9b99_01f78a51c218 = p["reaction_mw62f71309_e066_47d2_9b99_01f78a51c218_mw0cea56f3_1cdb_410e_a5a4_f3635ba5c94b"] * u[89]
 
@@ -566,7 +569,7 @@ function sbml_model!(du, u, p, t)
     # Species:   id = mwd32d108b_49c2_4df2_9b67_d6c6b84f54b9; name = pEGF-EGFR2-PI3K-cbl-EPn; affected by kineticLaw
     du[109] = (1 / (p["compartment_mw1637dd35_5f09_4a8d_bb7f_58717cdf1612"])) * ((1.0 * reaction_mw602726ea_89ee_41b8_bda6_e2811bb42c1d) + (-1.0 * reaction_mwfab3a9ec_b094_44f0_bd59_12ac56ca1c99))
 
-end 
+end
 
 u0=zeros(109)
 u0[1] = 0.0081967
@@ -683,3 +686,85 @@ tspan = (0.0,10.0)
 
 prob = ODEProblem(sbml_model!,u0,tspan, par)
 
+sys = modelingtoolkitize(prob)
+
+sys = structural_simplify(sys)
+
+prob = ODEProblem(sys, [], (0,10.))
+
+sol = solve(prob, CVODE_BDF(), abstol=1 / 10^14, reltol=1 / 10^14)
+test_sol = TestSolution(sol)
+
+
+abstols = 1.0 ./ 10.0 .^ (9:13)
+reltols = 1.0 ./ 10.0 .^ (6:10)
+
+
+
+setups = [
+    Dict(:alg => ImplicitHairerWannerExtrapolation(init_order = 5)),
+    Dict(:alg => ImplicitHairerWannerExtrapolation(threading=true)),
+    Dict(:alg => ImplicitHairerWannerExtrapolation(threading=OrdinaryDiffEq.PolyesterThreads())),
+  ]
+
+
+names = ["unthreaded", "threaded", "Polyester"];
+
+
+setups = [
+    Dict(:alg => ImplicitEulerBarycentricExtrapolation(min_order = 8, init_order = 9)),
+    Dict(:alg => ImplicitEulerBarycentricExtrapolation(min_order = 7, init_order = 8)),
+  ]
+
+names = ["default","tweaked"]
+wp = WorkPrecisionSet(prob, abstols, reltols, setups;
+                      names = names, save_everystep=false, appxsol=test_sol, maxiters=Int(1e5), numruns=10)
+
+plot(wp)
+
+
+@show wp.wps[1].times./wp.wps[3].times
+
+setups = [
+            Dict(:alg=>CVODE_BDF()),
+            Dict(:alg=>KenCarp4()),
+            Dict(:alg=>Rodas4()),
+            Dict(:alg=>QNDF()),
+            #Dict(:alg=>Rodas5()),
+            Dict(:alg=>lsoda()),
+            Dict(:alg=>radau()),
+            Dict(:alg=>seulex()),
+            Dict(:alg=>ImplicitEulerExtrapolation(min_order = 8, init_order = 9,threading = OrdinaryDiffEq.PolyesterThreads())),
+            Dict(:alg=>ImplicitEulerExtrapolation(min_order = 8, init_order = 9,threading = false)),
+            Dict(:alg=>ImplicitEulerBarycentricExtrapolation(min_order = 7, init_order = 8,threading = OrdinaryDiffEq.PolyesterThreads())),
+            Dict(:alg=>ImplicitEulerBarycentricExtrapolation(min_order = 7, init_order = 8,threading = false)),
+            Dict(:alg=>ImplicitHairerWannerExtrapolation(init_order = 5,threading = OrdinaryDiffEq.PolyesterThreads())),
+            Dict(:alg=>ImplicitHairerWannerExtrapolation(init_order = 5, threading = false)),
+            ]
+
+solnames = ["CVODE_BDF","KenCarp4","Rodas4","QNDF","lsoda","radau","seulex","ImplEulerExtpl (threaded)", "ImplEulerExtpl (non-threaded)",
+            "ImplEulerBaryExtpl (threaded)","ImplEulerBaryExtpl (non-threaded)","ImplHWExtpl (threaded)","ImplHWExtpl (non-threaded)"]
+
+wp = WorkPrecisionSet(prob,abstols,reltols,setups;
+                    names = solnames,save_everystep=false,appxsol=test_sol,maxiters=Int(1e5),numruns=10)
+
+gr(size=(1200,1000), xtickfontsize=13, ytickfontsize=13, xguidefontsize=16, yguidefontsize=16, legendfontsize=15, dpi=100, grid=(:y, :gray, :solid, 1, 0.4));
+
+plt = plot(wp)
+plt_ylims = Plots.ylims(plt)
+plt_ylims = (plt_ylims[1],plt_ylims[2]*5.5)
+plot(wp,titlefontsize = 20, title = "Implicit Methods: SBML Model",legendfontsize = 13,ylims = plt_ylims, legend = :topright, linewidth = 6, xticks = 10.0 .^ (-15.5:1:1),
+yticks = 10.0 .^ (-6:0.3:5),left_margin = 4mm, bottom_margin = 4mm,top_margin = 6mm,right_margin = 6mm)
+
+#plot(wp, size = (900,600), legend = :topleft, linewidth = 4, left_margin = 4mm, bottom_margin = 4mm)
+
+
+
+# abstols = 1.0 ./ 10.0 .^ (11:14)
+# reltols = 1.0 ./ 10.0 .^ (8:11)
+
+# wp = WorkPrecisionSet(prob, abstols, reltols, setups;
+#                       save_everystep=false, appxsol=test_sol, maxiters=Int(1e5), numruns=10)
+
+
+# plot(wp, size = (900,600), legend = :topright, linewidth = 4)
