@@ -1,17 +1,29 @@
 # ParallelExBenchmarks.jl
 Benchmarking native Julia parallel extrapolation methods
 
-
-## Multi-threading results
-### Brusselator Scaling
-![](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/scale_ode_bruss.png)
-
-### Brusselator Speedup (~2x, Polyester Threads)
-![](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/speed_up_bench.png)
-
-
 ## ODE Benchmarks
-### SBML BioModel
-![](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/sbml_bench.png)
-### Rober
-![ROBER, High Tolerances](https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/publication_benchmarks/plots/Rober.png)
+
+## Implicit Methods
+### QSP Model, 109 ODEs
+<img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/qsp_model.png" alt="drawing" width="50%"/>
+
+### Rober, 3 ODEs
+
+<img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/Rober.png" alt="drawing" width="50%"/>
+
+### OREGO, 3 ODEs
+<img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/Orego.png" alt="drawing" width="50%"/>
+
+### HIRES, 8 ODEs
+
+<img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/Hires.png" alt="drawing" width="50%"/>
+
+### POLLUTION, 20 ODEs
+
+<img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/Pollu.png" alt="drawing" width="50%"/>
+
+## Explicit Methods
+
+### 100 Linear ODEs
+
+<img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/Linear.png" alt="drawing" width="50%"/>
