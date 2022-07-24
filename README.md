@@ -27,3 +27,20 @@ Benchmarking native Julia parallel extrapolation methods
 ### 100 Linear ODEs
 
 <img src="https://github.com/utkarsh530/ParallelExBenchmarks.jl/blob/main/plots/Linear.png" alt="drawing" width="50%"/>
+
+
+## CPU Information
+
+```
+Julia Version 1.7.2
+Commit bf53498635 (2022-02-06 15:21 UTC)
+Platform Info:
+  OS: Linux (x86_64-pc-linux-gnu)
+  CPU: AMD EPYC 7513 32-Core Processor
+  WORD_SIZE: 64
+  LIBM: libopenlibm
+  LLVM: libLLVM-12.0.1 (ORCJIT, znver3)
+Environment:
+  JULIA_EDITOR = code
+  JULIA_NUM_THREADS = 8
+```
